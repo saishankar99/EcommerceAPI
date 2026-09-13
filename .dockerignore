@@ -1,0 +1,6 @@
+shopenv/
+__pycache__/
+*.db
+*.env
+.git
+.pytest_cache/

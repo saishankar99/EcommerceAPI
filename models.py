@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Column, DateTime,Text, Numeric, ForeignKey, Enum as SAEnum
+from sqlalchemy import Integer, String, Column, DateTime,Text, Numeric, ForeignKey, Enum as SAEnum, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
@@ -19,6 +19,7 @@ class Users(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     orders = relationship("Order", back_populates = "user")
+    reviews = relationship("Review", back_populates = "user")
 
 
 class Products(Base):
@@ -29,6 +30,8 @@ class Products(Base):
     price = Column(Numeric(10,2),nullable= False)
     stock = Column(Integer, nullable=False, default = 0)
     created_at = Column(DateTime(timezone=True),server_default=func.now())
+
+    reviews = relationship("Review", back_populates = "product")
 
 class Order(Base):
     __tablename__="orders"
@@ -51,6 +54,21 @@ class OrderItem(Base):
 
     order = relationship("Order", back_populates = "items")
     product = relationship("Products")
+
+class Review(Base):
+    __tablename__="reviews"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'product_id', name="uq_user_product_review"),
+    )
+    id = Column(Integer, primary_key = True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable= False)
+    product_id = Column(Integer, ForeignKey("products.id"), nullable= False)
+    rating = Column(Integer, nullable = False)
+    comment = Column(Text, nullable = True)
+    created_at = Column(DateTime(timezone=True), server_default = func.now())
+
+    user = relationship("Users", back_populates = "reviews")
+    product = relationship("Products", back_populates = "reviews")
     
 
 
