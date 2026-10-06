@@ -7,7 +7,11 @@ jobs:
       SECRET_KEY: dummy-secret
       DATABASE_URL: sqlite:///./test.db
       STRIPE_SECRET_KEY: sk_test_dummy
+<<<<<<< HEAD
       STRIPE_WEBHOOK_SECRET: whsec_dummy
+=======
+      STRIPE_WEBHOOK_KEY: whsec_dummy
+>>>>>>> 78279dd0d7ff61addf7d251b18910fddcecec91c
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -16,3 +20,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt
       - run: pytest -v 
+<<<<<<< HEAD
+=======
+      
+>>>>>>> 78279dd0d7ff61addf7d251b18910fddcecec91c
