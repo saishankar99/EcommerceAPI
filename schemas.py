@@ -82,6 +82,12 @@ class ReviewResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PaymentIntentResponse(BaseModel):
+    client_secret: str
+
+    class Config:
+        from_attributes = True
         
 
 

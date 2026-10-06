@@ -39,6 +39,7 @@ class Order(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable = False)
     status = Column(SAEnum(OrderStatus), nullable= False,  default = OrderStatus.pending)
     total_amount = Column(Numeric(10,2), nullable = False)
+    payment_intent_id = Column(String,nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("Users", back_populates = "orders")
