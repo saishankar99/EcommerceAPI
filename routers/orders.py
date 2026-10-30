@@ -1,5 +1,6 @@
-from fastapi import APIRouter,Depends,HTTPException, status
+from fastapi import APIRouter,Depends,HTTPException, status, Header
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 import schemas
 from database import get_db
 import models 
@@ -17,8 +18,15 @@ router = APIRouter(prefix = "/orders", tags=["orders"])
 def create_order(
     order: schemas.OrderCreate,
     db: Session = Depends(get_db),
-    current_user: models.Users = Depends(get_current_user)
+    current_user: models.Users = Depends(get_current_user),
+    idempotency_key: str|None = Header(default=None,alias="Idempotency-Key")
 ):
+    if not idempotency_key:
+        raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = "Idempotency-Key header is mandatory")
+    existing_order = db.query(models.Order).filter(models.Order.user_id == current_user.id, models.Order.idempotency_key == idempotency_key).first()
+    if existing_order:
+        return existing_order
+    
     total = Decimal("0")
     order_items=[]
     for item in order.items:
@@ -37,11 +45,18 @@ def create_order(
     new_order = models.Order(
         user_id = current_user.id,
         total_amount = total,
-        items = order_items
+        items = order_items,
+        idempotency_key = idempotency_key
     )
     try:
         db.add(new_order)
         db.commit()
+    except IntegrityError:
+        db.rollback()
+        existing_order = db.query(models.Order).filter(models.Order.user_id == current_user.id, models.Order.idempotency_key == idempotency_key).first()
+        if existing_order:
+            return existing_order
+        raise HTTPException(status_code = status.HTTP_409_CONFLICT, detail="Data could not be processed due to data conflict")
     except Exception: 
         db.rollback()
         raise HTTPException(status_code = 500, detail = "Order could not be processed")

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status, Depends
 import schemas
 from sqlalchemy.orm import Session
 import models
-from security import hash_password,verify_password,create_access_token,get_current_user,require_admin
+from security import hash_password,verify_password,create_access_token,get_current_user
 from fastapi.security import OAuth2PasswordRequestForm 
 from database import get_db
 
@@ -36,7 +36,3 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 @router.get("/me",response_model = schemas.UserResponse)
 def readme(user: models.Users = Depends(get_current_user)):
     return user
-
-@router.get("/admin-check")
-def admin_check(current_user: models.Users = Depends(require_admin)):
-    return {"message": f"Welcome admin {current_user.email}"}

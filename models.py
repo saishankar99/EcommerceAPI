@@ -35,6 +35,7 @@ class Products(Base):
 
 class Order(Base):
     __tablename__="orders"
+
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable = False)
     status = Column(SAEnum(OrderStatus), nullable= False,  default = OrderStatus.pending)
@@ -70,6 +71,19 @@ class Review(Base):
 
     user = relationship("Users", back_populates = "reviews")
     product = relationship("Products", back_populates = "reviews")
+
+class IdempotencyKey(Base):
+    __tablename__ = "idempotency_keys"
+    __table_args__ = (
+        UniqueConstraint('user_id','key', name="uq_idem_user_key"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable = False)
+    key = Column(String, nullable = False, index=True)
+    order_id = Column(Integer, ForeignKey("orders.id"), nullable = True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     
 
 
